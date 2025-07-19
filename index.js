@@ -24,8 +24,9 @@ const pool = mysql.createPool({
 
 // Test route
 app.get("/", (req, res) => {
-  res.send("Backend is up and running!");
+  res.json({ message: "Backend is up and running!" });
 });
+
 
 // Login endpoint
 app.post("/api/login", async (req, res) => {
