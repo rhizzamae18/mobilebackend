@@ -79,13 +79,14 @@ app.post("/api/login", async (req, res) => {
         level: user.userLevel,
       },
     });
-  } catch (err) {
-    console.error("Login error:", err);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-    });
-  }
+  }catch (err) {
+  console.error("Login error:", err.message); // Add message
+  res.status(500).json({
+    success: false,
+    message: "Server error",
+    error: err.message, // Show error in response for debugging
+  });
+}
 });
 
 // Start server
