@@ -14,10 +14,10 @@ app.use(express.json());
 
 // MySQL connection pool
 const pool = mysql.createPool({
-  host: process.env.127.0.0.0,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  host: '127.0.0.1', // Force IPv4 connection
+  user: process.env.DB_USER || 'root', // Fallback to 'root'
+  password: process.env.DB_PASSWORD || 'dialieasecapd', // Fallback to your password
+  database: process.env.DB_NAME || 'capd', // Fallback to 'capd'
   waitForConnections: true,
   connectionLimit: 10,
 });
@@ -60,7 +60,9 @@ app.post("/api/login", async (req, res) => {
       });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    // Handle $2y$ hashes by converting to $2a$ format
+    const hash = user.password.replace(/^\$2y/, "$2a");
+    const isMatch = await bcrypt.compare(password, hash);
 
     if (!isMatch) {
       return res.json({
