@@ -27,7 +27,6 @@ app.get("/", (req, res) => {
   res.json({ message: "Backend is up and running!" });
 });
 
-
 // Login endpoint
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
@@ -79,19 +78,17 @@ app.post("/api/login", async (req, res) => {
         level: user.userLevel,
       },
     });
-  }catch (err) {
-  console.error("Login error:", err.message); // Add message
-  res.status(500).json({
-    success: false,
-    message: "Server error",
-    error: err.message, // Show error in response for debugging
-  });
-}
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message,
+    });
+  }
 });
 
 // Start server
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ Server running on http://0.0.0.0:${PORT}`);
 });
-
-
