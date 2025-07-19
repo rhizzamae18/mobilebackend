@@ -1,30 +1,93 @@
-const express = require('express');
-const mysql = require('mysql2');
-require('dotenv').config();
+require("dotenv").config();
+
+const express = require("express");
+const cors = require("cors");
+const mysql = require("mysql2/promise");
+const bcrypt = require("bcryptjs");
 
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = 3000;
 
-// MySQL connection
-const connection = mysql.createConnection({
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// MySQL connection pool
+const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10,
 });
 
-connection.connect(err => {
-  if (err) {
-    console.error('MySQL connection error:', err);
-    return;
+// Test route
+app.get("/", (req, res) => {
+  res.send("Backend is up and running!");
+});
+
+// Login endpoint
+app.post("/api/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({
+      success: false,
+      message: "Email and password are required",
+    });
   }
-  console.log('Connected to MySQL...');
+
+  try {
+    const [users] = await pool.query(
+      "SELECT userID, first_name, email, password, userLevel FROM users WHERE email = ?",
+      [email]
+    );
+
+    if (users.length === 0) {
+      return res.json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    const user = users[0];
+
+    if (user.userLevel === "admin") {
+      return res.json({
+        success: false,
+        message: "You can't access this account here",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    res.json({
+      success: true,
+      user: {
+        id: user.userID,
+        first_name: user.first_name,
+        email: user.email,
+        level: user.userLevel,
+      },
+    });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
 });
 
-app.get('/', (req, res) => {
-  res.send('Backend is working!');
-});
-
-app.listen(port, '0.0.0.0', () => {
-  console.log(`✅ Server running on http://0.0.0.0:${port}`);
+// Start server
+app.listen(PORT, () => {
+  console.log(`✅ Server running on http://localhost:${PORT}`);
 });
