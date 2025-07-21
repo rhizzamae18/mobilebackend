@@ -1,19 +1,19 @@
-const mysql = require("mysql2");
-require("dotenv").config();
+const mysql = require('mysql2');
+require('dotenv').config();
 
 const connection = mysql.createConnection({
-  host: process.env.DB_HOST,        // e.g., 'localhost'
-  user: process.env.DB_USER,        // e.g., 'user'
-  password: process.env.DB_PASSWORD,// e.g., 'dialieasepass'
-  database: process.env.DB_NAME     // e.g., 'capd'
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
 });
 
 connection.connect((err) => {
   if (err) {
-    console.error("Database connection failed:", err.stack);
+    console.error('MySQL connection error:', err);
     return;
   }
-  console.log("Connected to MySQL database.");
+  console.log('Connected to MySQL');
 });
 
 module.exports = connection;
