@@ -27,6 +27,17 @@ app.get("/", (req, res) => {
   res.json({ message: "Backend is up and running!" });
 });
 
+app.get("/test-db", async (req, res) => {
+  try {
+    const [rows] = await pool.query("SELECT 1 + 1 AS result");
+    res.json({ success: true, result: rows[0].result });
+  } catch (error) {
+    console.error("Database connection error:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+
 // Login endpoint
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
